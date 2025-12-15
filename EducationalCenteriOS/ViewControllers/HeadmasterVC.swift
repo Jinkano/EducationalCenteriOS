@@ -7,12 +7,19 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController
+{
+    /* Esta variable recibirá los datos del usuario */
+    var currentUser: user?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        if let user = currentUser {
+                    print("Bienvenido Director: \(user.name)")
+                    // Aquí puedes actualizar labels, etc.
+                }
+        
     }
     
 
