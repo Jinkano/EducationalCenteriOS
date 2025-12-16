@@ -10,7 +10,7 @@ import UIKit
 class ViewController: UIViewController
 {
     /* Esta variable recibirá los datos del usuario */
-    var currentUser: user?
+    var currentUser: User?
 
     override func viewDidLoad() {
         super.viewDidLoad()

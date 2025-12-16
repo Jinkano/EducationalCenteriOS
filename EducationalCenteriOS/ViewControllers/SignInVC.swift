@@ -53,59 +53,93 @@ class SignInVC: UIViewController
     }
     
     /**/
-    func goToViewController(role: String)
+    /*func goToViewController(role: String)
     {
-        switch role
+        guard let userRole = UserRole(rawValue: role) else
         {
-        case "director":
-            // Navegar a la vista principal del Director
-            self.performSegue(withIdentifier: "GoTo VC Headmaster", sender: nil)
-        case "secretaria":
-            // Navegar a la vista principal de la Secretaría
-            self.performSegue(withIdentifier: "GoTo VC Secretary", sender: nil)
-        case "profesor":
-            // Navegar a la vista principal del Profesor
-            self.performSegue(withIdentifier: "GoTo VC Teacher", sender: nil)
-        case "alumno":
-            // Navegar a la vista principal del Alumno
-            self.performSegue(withIdentifier: "GoTo VC Student", sender: nil)
-        default:
-            self.showMessage(message: "Rol de usuario desconocido.")
+            showMessage(message: "Rol desconocido")
+            return
         }
+        performSegue(withIdentifier: userRole.segueIdentifier, sender: nil)
+    }*/
+    func goToViewController(role: UserRole)
+    {
+        performSegue(withIdentifier: role.segueIdentifier, sender: nil)
     }
+
 
 
     /**/
-    func getFirestoreData(uid: String)
-    {
+    func getFirestoreData(uid: String) {
+
         let db = Firestore.firestore()
-        
-        // Consulta el documento de perfil usando el UID como ID del documento
-            db.collection("users").document(uid).getDocument { [weak self] document, error in
-                guard let self = self else { return }
-                
-                if let error = error {
-                    print("Error al obtener el documento de Firestore: \(error.localizedDescription)")
-                    self.showMessage(message: "Error al cargar perfil.")
-                    return
-                }
 
-                // Extrae el campo
-                guard let document = document, document.exists,
-                      let userData = document.data(),
-                      let rol = userData["rol"] as? String else {
-                    
-                    self.showMessage(message: "Perfil de empleado incompleto o no encontrado.")
-                    
-                    return
-                }
+        db.collection("users").document(uid).getDocument { document, error in
 
-                print("Rol del usuario: \(rol)")
-                
-                // Llama a la función de navegación con el rol obtenido
-                self.goToViewController(role: rol)
+            if let error = error {
+                print("Firestore error:", error.localizedDescription)
+                return
             }
+
+            guard let document = document else {
+                print("Documento nil")
+                return
+            }
+
+            print("Document exists:", document.exists)
+
+            if let data = document.data() {
+                print("Firestore data:", data)
+            }
+
+            guard document.exists,
+                  let data = document.data(),
+                  let user = User(dictionary: data, uid: uid) else {
+
+                self.showMessage(message: "Perfil inválido o incompleto.")
+                return
+            }
+
+            print("Usuario cargado:", user)
+        }
+
+        /*db.collection("users").document(uid).getDocument { [weak self] document, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Firestore error: \(error.localizedDescription)")
+                self.showMessage(message: "Error al cargar perfil.")
+                return
+            }
+
+            guard let document = document,
+                  document.exists,
+                  let data = document.data(),
+                  let user = User(dictionary: data) else {
+
+                self.showMessage(message: "Perfil inválido o incompleto.")
+                return
+            }
+            //
+            //
+            print("Firestore data:", data)
+            //
+            //
+            // Validar usuario activo
+            guard user.active else {
+                self.showMessage(message: "Usuario desactivado. Contacte al administrador.")
+                return
+            }
+
+            print("Usuario cargado:", user)
+
+            // Navegación en main thread
+            DispatchQueue.main.async {
+                self.goToViewController(role: user.rol)
+            }
+        }*/
     }
+
     
 }
 
