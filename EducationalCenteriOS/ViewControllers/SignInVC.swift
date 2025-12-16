@@ -53,29 +53,24 @@ class SignInVC: UIViewController
     }
     
     /**/
-    func goToViewController(userData: user)
+    func goToViewController(role: String)
     {
-        let role = userData.rol.lowercased()
-
-        DispatchQueue.main.async
+        switch role
         {
-            switch role
-            {
-            case "director":
-                // Navegar a la vista principal del Director
-                self.performSegue(withIdentifier: "GoTo VC Headmaster", sender: userData)
-            case "secretaria":
-                // Navegar a la vista principal de la Secretaría
-                self.performSegue(withIdentifier: "GoTo VC Secretary", sender: userData)
-            case "profesor":
-                // Navegar a la vista principal del Profesor
-                self.performSegue(withIdentifier: "GoTo VC Teacher", sender: userData)
-            case "alumno":
-                // Navegar a la vista principal del Alumno
-                self.performSegue(withIdentifier: "GoTo VC Student", sender: userData)
-            default:
-                self.showMessage(message: "Rol de usuario desconocido.")
-            }
+        case "director":
+            // Navegar a la vista principal del Director
+            self.performSegue(withIdentifier: "GoTo VC Headmaster", sender: nil)
+        case "secretaria":
+            // Navegar a la vista principal de la Secretaría
+            self.performSegue(withIdentifier: "GoTo VC Secretary", sender: nil)
+        case "profesor":
+            // Navegar a la vista principal del Profesor
+            self.performSegue(withIdentifier: "GoTo VC Teacher", sender: nil)
+        case "alumno":
+            // Navegar a la vista principal del Alumno
+            self.performSegue(withIdentifier: "GoTo VC Student", sender: nil)
+        default:
+            self.showMessage(message: "Rol de usuario desconocido.")
         }
     }
 
@@ -90,25 +85,28 @@ class SignInVC: UIViewController
                 guard let self = self else { return }
                 
                 if let error = error {
-                    self.showMessage(message: "Error: \(error.localizedDescription)")
+                    print("Error al obtener el documento de Firestore: \(error.localizedDescription)")
+                    self.showMessage(message: "Error al cargar perfil.")
                     return
                 }
 
-                // 1. Intentamos convertir todo el documento en tu struct 'user'
-                // Esto es mucho más limpio que usar userData["rol"]
-                if let document = document, document.exists,
-                           let datosDelUsuario = try? document.data(as: user.self) {
-                            
-                            print("Datos cargados para: \(datosDelUsuario.name)")
-                            
-                            // 2. Llamamos a la navegación pasándole el OBJETO completo
-                            self.goToViewController(userData: datosDelUsuario)
-                            
-                        } else {
-                            self.showMessage(message: "Perfil no encontrado en la base de datos.")
-                        }
+                // Extrae el campo
+                guard let document = document, document.exists,
+                      let userData = document.data(),
+                      let rol = userData["rol"] as? String else {
+                    
+                    self.showMessage(message: "Perfil de empleado incompleto o no encontrado.")
+                    
+                    return
+                }
+
+                print("Rol del usuario: \(rol)")
+                
+                // Llama a la función de navegación con el rol obtenido
+                self.goToViewController(role: rol)
             }
     }
     
 }
+
 
